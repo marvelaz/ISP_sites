@@ -80,7 +80,7 @@ for d in data:
             else:
                 continue
 
-            final_data.setdefault(title, {})['nearest site'] = sorted(dist, key=lambda tup: tup[1])[:3]
+            final_data.setdefault(title, {})['nearest site'] = dict(sorted(dist, key=lambda tup: tup[1])[:3])
             #final_data.setdefault(title, {})['nearest site'] = min(final_data[title]['distance'], key=final_data[title]['distance'].get)
             #sorted(dist, key=lambda tup: tup[1])
 
@@ -99,7 +99,7 @@ for d in data:
                    distnfo.update(dict({name2: f11}).items())
 
                    #final_data.setdefault(title, {})['nearest NFO site'] = min(final_data[title]['FO distance'], key=final_data[title]['FO distance'].get)
-                   final_data.setdefault(title, {})['nearest NFO site'] = sorted(distnfo, key=lambda tup: tup[1])[:2]
+                   final_data.setdefault(title, {})['nearest NFO site'] = dict(sorted(distnfo, key=lambda tup: tup[1])[:2])
                 else:
                    final_data.setdefault(title, {})['nearest NFO site'] = 'OUT OF RANGE'
 
