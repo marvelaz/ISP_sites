@@ -75,14 +75,11 @@ for d in data:
                     continue
                 else:
                     name1 = 'to: ' + s['name']
-                    #final_data.setdefault(title, {}).setdefault('distance',{})[name1] = f
                     dist.update(dict({name1: f}).items())
             else:
                 continue
 
             final_data.setdefault(title, {})['nearest site'] = dict(sorted(dist, key=lambda tup: tup[1])[:3])
-            #final_data.setdefault(title, {})['nearest site'] = min(final_data[title]['distance'], key=final_data[title]['distance'].get)
-            #sorted(dist, key=lambda tup: tup[1])
 
 # find NFO nearest site
         for s in sites:
@@ -95,15 +92,10 @@ for d in data:
                 f11 = mpu.haversine_distance((lat1, lon1), (latn, lonn))
                 if f11 <= 100:
                    name2 = 'to: ' + s['name']
-                   #final_data.setdefault(title, {}).setdefault('FO distance', {})[name2] = f11
                    distnfo.update(dict({name2: f11}).items())
-
-                   #final_data.setdefault(title, {})['nearest NFO site'] = min(final_data[title]['FO distance'], key=final_data[title]['FO distance'].get)
                    final_data.setdefault(title, {})['nearest NFO site'] = dict(sorted(distnfo, key=lambda tup: tup[1])[:2])
                 else:
                    final_data.setdefault(title, {})['nearest NFO site'] = 'OUT OF RANGE'
-
-
 
 
 with open("final_datav1.json", 'w') as outfile:
