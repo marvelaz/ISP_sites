@@ -52,7 +52,9 @@ for d in data:
         continue
     else:
         dist = set()
-        distnfo = set()
+        distnfo5 = set()
+        distnfo10 = set()
+        distnfo80 = set()
         Router1 = d['RA']
         Router2 = d['RB']
         lat1 = export_data[Router1]['lat']
@@ -79,7 +81,7 @@ for d in data:
             else:
                 continue
 
-            final_data.setdefault(title, {})['nearest site'] = dict(sorted(dist, key=lambda tup: tup[1])[:3])
+            final_data.setdefault(title, {})['nearest site'] = dict(sorted(dist, key=lambda tup: tup[1])[:4])
 
 # find NFO nearest site
         for s in sites:
@@ -90,13 +92,27 @@ for d in data:
                 latn = s['latitude']
                 lonn = s['longitude']
                 f11 = mpu.haversine_distance((lat1, lon1), (latn, lonn))
-                if f11 <= 100:
+                if f11 <= 5:
                    name2 = 'to: ' + s['name']
-                   distnfo.update(dict({name2: f11}).items())
-                   final_data.setdefault(title, {})['nearest NFO site'] = dict(sorted(distnfo, key=lambda tup: tup[1])[:2])
+                   distnfo5.update(dict({name2: f11}).items())
+                   #final_data.setdefault(title, {})['nearest NFO site'] = dict(sorted(distnfo, key=lambda tup: tup[1])[:2])
+                elif f11 <10:
+                    name2 = 'to: ' + s['name']
+                    distnfo10.update(dict({name2: f11}).items())
+                elif f11 <= 80:
+                    name2 = 'to: ' + s['name']
+                    distnfo80.update(dict({name2: f11}).items())
                 else:
-                   final_data.setdefault(title, {})['nearest NFO site'] = 'OUT OF RANGE'
+                    continue
 
+        if len(distnfo5) > 0:
+            final_data.setdefault(title, {})['NFO site < 5km'] = dict(sorted(distnfo5, key=lambda tup: tup[1])[:2])
+        elif len(distnfo10) > 0:
+            final_data.setdefault(title, {})['NFO site < 10km'] = dict(sorted(distnfo10, key=lambda tup: tup[1])[:2])
+        elif len(distnfo80) > 0:
+            final_data.setdefault(title, {})['NFO site < 80km'] = dict(sorted(distnfo80, key=lambda tup: tup[1])[:2])
+        else:
+            final_data.setdefault(title, {})['nearest NFO site'] = 'OUT OF RANGE'
 
 with open("final_datav1.json", 'w') as outfile:
     json.dump(final_data, outfile, indent=4)
