@@ -10,9 +10,9 @@ with open('file2.json') as json_file1:
 with open('adapters_latest.json') as json_file2:
     adapters = json.load(json_file2)
 
-export_data = dict({})
-final_data = dict({})
-max_distance = []
+export_data = dict()
+final_data = dict()
+max_distance = set()
 dist = set()
 f11 = 0
 
@@ -51,6 +51,8 @@ for d in data:
     if d['RA'] == '' or d['RB'] == '':
         continue
     else:
+        dist = set()
+        distnfo = set()
         Router1 = d['RA']
         Router2 = d['RB']
         lat1 = export_data[Router1]['lat']
@@ -58,25 +60,31 @@ for d in data:
         lat2 = export_data[Router2]['lat']
         lon2 = export_data[Router2]['long']
 
-        d = mpu.haversine_distance((lat1, lon1), (lat2, lon2))
+        d1 = mpu.haversine_distance((lat1, lon1), (lat2, lon2))
         title = 'From: ' + Router1 + ' to: ' + Router2
-        final_data.setdefault(title, {})['link_distance'] = d
+        final_data.setdefault(title, {})['link_distance'] = d1
+        final_data.setdefault(title, {})['SiteA'] = d['Site1']
+        final_data.setdefault(title, {})['Provider'] = d['provider']
         for s in sites:
             latn = s['latitude']
             lonn = s['longitude']
             f = mpu.haversine_distance((lat1, lon1), (latn, lonn))
-            dist.update((s['name'],f))
 
-            if f < 5: #Sites in 5 km range
+            if f < d1: #Sites in 5 km range
                 if f == 0:
                     continue
                 else:
                     name1 = 'to: ' + s['name']
-                    final_data.setdefault(title, {}).setdefault('distance',{})[name1] = f
+                    #final_data.setdefault(title, {}).setdefault('distance',{})[name1] = f
+                    dist.update(dict({name1: f}).items())
             else:
                 continue
-            final_data.setdefault(title, {})['nearest site'] = min(final_data[title]['distance'], key=final_data[title]['distance'].get)
 
+            final_data.setdefault(title, {})['nearest site'] = sorted(dist, key=lambda tup: tup[1])[:3]
+            #final_data.setdefault(title, {})['nearest site'] = min(final_data[title]['distance'], key=final_data[title]['distance'].get)
+            #sorted(dist, key=lambda tup: tup[1])
+
+# find NFO nearest site
         for s in sites:
             m = re.search('NFO-\d+', s['name'])
             if m is None:
@@ -85,13 +93,15 @@ for d in data:
                 latn = s['latitude']
                 lonn = s['longitude']
                 f11 = mpu.haversine_distance((lat1, lon1), (latn, lonn))
-                if f11 < 80:
-                    name2 = 'to: ' + s['name']
-                    final_data.setdefault(title, {}).setdefault('FO distance', {})[name2] = f11
+                if f11 <= 100:
+                   name2 = 'to: ' + s['name']
+                   #final_data.setdefault(title, {}).setdefault('FO distance', {})[name2] = f11
+                   distnfo.update(dict({name2: f11}).items())
 
-                    final_data.setdefault(title, {})['nearest NFO site'] = min(final_data[title]['FO distance'], key=final_data[title]['FO distance'].get)
+                   #final_data.setdefault(title, {})['nearest NFO site'] = min(final_data[title]['FO distance'], key=final_data[title]['FO distance'].get)
+                   final_data.setdefault(title, {})['nearest NFO site'] = sorted(distnfo, key=lambda tup: tup[1])[:2]
                 else:
-                    final_data.setdefault(title, {})['nearest NFO site'] = 'OUT OF RANGE'
+                   final_data.setdefault(title, {})['nearest NFO site'] = 'OUT OF RANGE'
 
 
 
